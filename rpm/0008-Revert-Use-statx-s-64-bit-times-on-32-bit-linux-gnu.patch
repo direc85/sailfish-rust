@@ -12,10 +12,10 @@ This reverts commit fec4818fdb40c82679f57fa7f26fcddc1a874c13.
  library/std/src/sys/unix/time.rs |   1 +
  3 files changed, 42 insertions(+), 89 deletions(-)
 
-diff --git a/library/std/src/os/linux/fs.rs b/library/std/src/os/linux/fs.rs
+diff --git a/rustc-1.72.1-src/library/std/src/os/linux/fs.rs b/rustc-1.72.1-src/library/std/src/os/linux/fs.rs
 index 479bbcc17a8..2e90d8d6be7 100644
---- a/library/std/src/os/linux/fs.rs
-+++ b/library/std/src/os/linux/fs.rs
+--- a/rustc-1.72.1-src/library/std/src/os/linux/fs.rs
++++ b/rustc-1.72.1-src/library/std/src/os/linux/fs.rs
 @@ -356,34 +356,19 @@ fn st_size(&self) -> u64 {
          self.as_inner().as_inner().st_size as u64
      }
@@ -54,10 +54,10 @@ index 479bbcc17a8..2e90d8d6be7 100644
      }
      fn st_ctime_nsec(&self) -> i64 {
          self.as_inner().as_inner().st_ctime_nsec as i64
-diff --git a/library/std/src/sys/unix/fs.rs b/library/std/src/sys/unix/fs.rs
+diff --git a/rustc-1.72.1-src/library/std/src/sys/unix/fs.rs b/rustc-1.72.1-src/library/std/src/sys/unix/fs.rs
 index bf49ad70590..ff01830e0f6 100644
---- a/library/std/src/sys/unix/fs.rs
-+++ b/library/std/src/sys/unix/fs.rs
+--- a/rustc-1.72.1-src/library/std/src/sys/unix/fs.rs
++++ b/rustc-1.72.1-src/library/std/src/sys/unix/fs.rs
 @@ -109,19 +109,10 @@ struct StatxExtraFields {
          // This is needed to check if btime is supported by the filesystem.
          stx_mask: u32,
@@ -239,10 +239,10 @@ index bf49ad70590..ff01830e0f6 100644
                  } else {
                      Err(io::const_io_error!(
                          io::ErrorKind::Uncategorized,
-diff --git a/library/std/src/sys/unix/time.rs b/library/std/src/sys/unix/time.rs
+diff --git a/rustc-1.72.1-src/library/std/src/sys/unix/time.rs b/rustc-1.72.1-src/library/std/src/sys/unix/time.rs
 index 17b4130c202..4e8dd9a86e7 100644
---- a/library/std/src/sys/unix/time.rs
-+++ b/library/std/src/sys/unix/time.rs
+--- a/rustc-1.72.1-src/library/std/src/sys/unix/time.rs
++++ b/rustc-1.72.1-src/library/std/src/sys/unix/time.rs
 @@ -36,6 +36,7 @@ pub(in crate::sys::unix) struct Timespec {
 
  impl SystemTime {

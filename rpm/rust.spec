@@ -227,6 +227,7 @@ and ensure that you'll always get a repeatable build.
 
 %prep
 #SFOS : our rust_use_bootstrap puts them into /usr
+cd rust-1.72.1-i686-unknown-linux-gnu
 %if 0%{?rust_use_bootstrap}
 %setup -q -n %{bootstrap_root} -T -b 100
 ./install.sh --components=cargo,rustc,rust-std-%{rust_x86_triple} \
@@ -234,9 +235,10 @@ and ensure that you'll always get a repeatable build.
 test -f '%{local_rust_root}/bin/cargo'
 test -f '%{local_rust_root}/bin/rustc'
 %endif
+cd ..
 
 %autosetup -p1 -n %{rustc_package}
-
+cd rustc-1.72.1-src
 sed -i.try-py3 -e '/try python2.7/i try python3 "$@"' ./configure
 
 rm -rf src/llvm-project/
@@ -269,7 +271,7 @@ find -name '*.rs' -type f -perm /111 -exec chmod -v -x '{}' '+'
 
 
 %build
-
+cd rustc-1.72.1-src
 export RUSTFLAGS="%{rustflags}"
 # We set these to be blank as rust will set appropriate values when
 # invoking either the 'native' x86 or a suitable cross compiler.
@@ -306,6 +308,7 @@ PATH=/opt/cross/bin/:$PATH
 ###
 
 # The configure macro sets CFLAGS to x86 which causes the ARM target to fail
+rm -f config.toml
 ./configure --prefix=/usr --exec-prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --sysconfdir=/etc --datadir=/usr/share --includedir=/usr/include --libdir=/usr/lib --libexecdir=/usr/libexec --localstatedir=/var --sharedstatedir=/var/lib --mandir=/usr/share/man --infodir=/usr/share/info \
  --disable-option-checking \
   --libdir=%{common_libdir} \

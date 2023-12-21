@@ -9,10 +9,10 @@ Signed-off-by: Ruben De Smet <ruben.de.smet@rubdos.be>
  config.example.toml | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/config.example.toml b/config.example.toml
+diff --git a/rustc-1.72.1-src/config.example.toml b/rustc-1.72.1-src/config.example.toml
 index 0c65b25fe13..43beaed6e7b 100644
---- a/config.example.toml
-+++ b/config.example.toml
+--- a/rustc-1.72.1-src/config.example.toml
++++ b/rustc-1.72.1-src/config.example.toml
 @@ -88,7 +88,7 @@ changelog-seen = 2
  # the resulting rustc being unable to compile for the disabled architectures.
  #

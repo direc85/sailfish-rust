@@ -19,10 +19,10 @@ Signed-off-by: Ruben De Smet <ruben.de.smet@rubdos.be>
  library/std/src/sys/unix/fs.rs | 32 ++------------------------------
  1 file changed, 2 insertions(+), 30 deletions(-)
 
-diff --git a/library/std/src/sys/unix/fs.rs b/library/std/src/sys/unix/fs.rs
+diff --git a/rustc-1.72.1-src/library/std/src/sys/unix/fs.rs b/rustc-1.72.1-src/library/std/src/sys/unix/fs.rs
 index fbc7f04ce9a..bf49ad70590 100644
---- a/library/std/src/sys/unix/fs.rs
-+++ b/library/std/src/sys/unix/fs.rs
+--- a/rustc-1.72.1-src/library/std/src/sys/unix/fs.rs
++++ b/rustc-1.72.1-src/library/std/src/sys/unix/fs.rs
 @@ -28,28 +28,11 @@
  use crate::sys::{cvt, cvt_r};
  use crate::sys_common::{AsInner, AsInnerMut, FromInner, IntoInner};

@@ -11,10 +11,10 @@ Signed-off-by: Ruben De Smet <ruben.de.smet@rubdos.be>
  src/tools/cargo | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/src/tools/cargo/src/cargo/core/compiler/compile_kind.rs b/src/tools/cargo/src/cargo/core/compiler/compile_kind.rs
+diff --git a/rustc-1.72.1-src/src/tools/cargo/src/cargo/core/compiler/compile_kind.rs b/rustc-1.72.1-src/src/tools/cargo/src/cargo/core/compiler/compile_kind.rs
 index 73d8f89cc..d35f55d11 100644
---- a/src/tools/cargo/src/cargo/core/compiler/compile_kind.rs
-+++ b/src/tools/cargo/src/cargo/core/compiler/compile_kind.rs
+--- a/rustc-1.72.1-src/src/tools/cargo/src/cargo/core/compiler/compile_kind.rs
++++ b/rustc-1.72.1-src/src/tools/cargo/src/cargo/core/compiler/compile_kind.rs
 @@ -71,7 +71,13 @@ impl CompileKind {
          }
 
