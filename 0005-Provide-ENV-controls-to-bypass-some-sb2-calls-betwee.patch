@@ -41,7 +41,7 @@ Signed-off-by: Ruben De Smet <ruben.de.smet@rubdos.be>
  2 files changed, 156 insertions(+), 16 deletions(-)
 
 diff --git a/library/std/src/sys/process/unix/common.rs b/library/std/src/sys/process/unix/common.rs
-index b6777b766..eda08696b 100644
+index f6bbfed61..9be4557db 100644
 --- a/library/std/src/sys/process/unix/common.rs
 +++ b/library/std/src/sys/process/unix/common.rs
 @@ -1,7 +1,7 @@
@@ -53,7 +53,7 @@ index b6777b766..eda08696b 100644
  
  pub use self::cstring_array::CStringArray;
  use self::cstring_array::CStringIter;
-@@ -80,9 +80,16 @@ cfg_if::cfg_if! {
+@@ -84,9 +84,16 @@ cfg_select! {
  ////////////////////////////////////////////////////////////////////////////////
  
  pub struct Command {
@@ -71,7 +71,7 @@ index b6777b766..eda08696b 100644
  
      program_kind: ProgramKind,
      cwd: Option<CString>,
-@@ -160,6 +167,14 @@ impl ProgramKind {
+@@ -157,6 +164,14 @@ impl ProgramKind {
      }
  }
  
@@ -86,7 +86,7 @@ index b6777b766..eda08696b 100644
  impl Command {
      pub fn new(program: &OsStr) -> Command {
          let mut saw_nul = false;
-@@ -172,6 +187,13 @@ impl Command {
+@@ -169,6 +184,13 @@ impl Command {
              args,
              env: Default::default(),
              program_kind,
@@ -100,7 +100,7 @@ index b6777b766..eda08696b 100644
              cwd: None,
              chroot: None,
              uid: None,
-@@ -188,6 +210,22 @@ impl Command {
+@@ -186,6 +208,22 @@ impl Command {
          }
      }
  
@@ -124,7 +124,7 @@ index b6777b766..eda08696b 100644
          // Set a new arg0
          let arg = os2c(arg, &mut self.saw_nul);
 diff --git a/library/std/src/sys/process/unix/unix.rs b/library/std/src/sys/process/unix/unix.rs
-index 1fe80c13b..b1819ed87 100644
+index 82ff94fb1..91a91ebed 100644
 --- a/library/std/src/sys/process/unix/unix.rs
 +++ b/library/std/src/sys/process/unix/unix.rs
 @@ -1,7 +1,7 @@
@@ -136,17 +136,17 @@ index 1fe80c13b..b1819ed87 100644
  #[cfg(not(any(
      target_os = "vxworks",
      target_os = "l4re",
-@@ -16,7 +16,7 @@ use crate::num::NonZero;
+@@ -17,7 +17,7 @@ use crate::process::StdioPipes;
  use crate::sys::cvt;
  #[cfg(target_os = "linux")]
  use crate::sys::pal::linux::pidfd::PidFd;
 -use crate::{fmt, mem, sys};
 +use crate::{env, fmt, mem, sys};
  
- cfg_if::cfg_if! {
-     if #[cfg(target_os = "nto")] {
-@@ -45,6 +45,8 @@ cfg_if::cfg_if! {
-     }
+ cfg_select! {
+     target_os = "nto" => {
+@@ -47,6 +47,8 @@ cfg_select! {
+     _ => {}
  }
  
 +use crate::intrinsics::transmute;
@@ -154,9 +154,9 @@ index 1fe80c13b..b1819ed87 100644
  ////////////////////////////////////////////////////////////////////////////////
  // Command
  ////////////////////////////////////////////////////////////////////////////////
-@@ -78,6 +80,59 @@ impl Command {
+@@ -80,6 +82,59 @@ impl Command {
          #[cfg(not(target_os = "linux"))]
-         let (input, output) = sys::pipe::anon_pipe()?;
+         let (input, output) = sys::pipe::pipe()?;
  
 +        // If there is a RUST_EXEC_SHIM (could be "/usr/bin/env --")
 +        // then we're probably going to directly execvp it via dlsym
@@ -214,7 +214,7 @@ index 1fe80c13b..b1819ed87 100644
          // Whatever happens after the fork is almost for sure going to touch or
          // look at the environment in one way or another (PATH in `execvp` or
          // accessing the `environ` pointer ourselves). Make sure no other thread
-@@ -94,7 +149,7 @@ impl Command {
+@@ -96,7 +151,7 @@ impl Command {
          if pid == 0 {
              crate::panic::always_abort();
              mem::forget(env_lock); // avoid non-async-signal-safe unlocking
@@ -223,7 +223,7 @@ index 1fe80c13b..b1819ed87 100644
              #[cfg(target_os = "linux")]
              if self.get_create_pidfd() {
                  self.send_pidfd(&output);
-@@ -241,7 +296,47 @@ impl Command {
+@@ -243,7 +298,47 @@ impl Command {
              Err(e) => e,
          }
      }
@@ -272,7 +272,7 @@ index 1fe80c13b..b1819ed87 100644
      // And at this point we've reached a special time in the life of the
      // child. The child must now be considered hamstrung and unable to
      // do anything other than syscalls really. Consider the following
-@@ -281,13 +376,13 @@ impl Command {
+@@ -283,13 +378,13 @@ impl Command {
          use crate::sys::{self, cvt_r};
  
          if let Some(fd) = stdio.stdin.fd() {
@@ -289,7 +289,7 @@ index 1fe80c13b..b1819ed87 100644
          }
  
          #[cfg(not(target_os = "l4re"))]
-@@ -295,10 +390,10 @@ impl Command {
+@@ -297,10 +392,10 @@ impl Command {
              if let Some(_g) = self.get_groups() {
                  //FIXME: Redox kernel does not support setgroups yet
                  #[cfg(not(target_os = "redox"))]
@@ -302,7 +302,7 @@ index 1fe80c13b..b1819ed87 100644
              }
              if let Some(u) = self.get_uid() {
                  // When dropping privileges from root, the `setgroups` call
-@@ -310,7 +405,7 @@ impl Command {
+@@ -312,7 +407,7 @@ impl Command {
                  //FIXME: Redox kernel does not support setgroups yet
                  #[cfg(not(target_os = "redox"))]
                  if self.get_groups().is_none() {
@@ -311,7 +311,7 @@ index 1fe80c13b..b1819ed87 100644
                      if let Err(e) = res {
                          // Here we ignore the case of not having CAP_SETGID.
                          // An alternative would be to require CAP_SETGID (in
-@@ -320,7 +415,7 @@ impl Command {
+@@ -322,7 +417,7 @@ impl Command {
                          }
                      }
                  }
@@ -320,7 +320,7 @@ index 1fe80c13b..b1819ed87 100644
              }
          }
          if let Some(chroot) = self.get_chroot() {
-@@ -333,7 +428,7 @@ impl Command {
+@@ -335,7 +430,7 @@ impl Command {
              ));
          }
          if let Some(cwd) = self.get_cwd() {
@@ -329,7 +329,7 @@ index 1fe80c13b..b1819ed87 100644
          }
  
          if let Some(pgroup) = self.get_pgroup() {
-@@ -398,8 +493,12 @@ impl Command {
+@@ -404,8 +499,12 @@ impl Command {
              _reset = Some(Reset(*sys::env::environ()));
              *sys::env::environ() = envp.as_ptr();
          }
@@ -344,9 +344,9 @@ index 1fe80c13b..b1819ed87 100644
          Err(io::Error::last_os_error())
      }
  
-@@ -451,12 +550,15 @@ impl Command {
+@@ -457,12 +556,15 @@ impl Command {
          use crate::mem::MaybeUninit;
-         use crate::sys::{self, cvt_nz, on_broken_pipe_flag_used};
+         use crate::sys::{self, cvt_nz, on_broken_pipe_used};
  
 +        let skip_spawnvp: bool = env::var("SB2_RUST_NO_SPAWNVP").is_ok();
 +

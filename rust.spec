@@ -11,10 +11,10 @@
 %define rust_use_bootstrap 1
 %define bootstrap_arches i486
 
-%global bootstrap_rust 1.89.0
-%global bootstrap_cargo 1.89.0
+%global bootstrap_rust 1.95.0
+%global bootstrap_cargo 1.95.0
 
-%global rust_version 1.89.0
+%global rust_version 1.95.0
 
 %ifarch %ix86
 %define xbuildjobs %{nil}
@@ -72,7 +72,6 @@ Patch4:  0004-Force-the-target-when-building-for-CompileKind-Host.patch
 Patch5:  0005-Provide-ENV-controls-to-bypass-some-sb2-calls-betwee.patch
 Patch6:  0006-Scratchbox2-needs-to-be-able-to-tell-cargo-the-defau.patch
 Patch9:  0009-Relocate-unset-tmp.patch
-Patch10: 0010-Disable-building-LLVM-tools.patch
 # This is the real rustc spec - the stub one appears near the end.
 %ifarch %ix86
 
@@ -469,6 +468,7 @@ rm -fvr %{buildroot}%{_mandir}/man1
 %{rustlibdir}/%{rust_x86_triple}/bin/rust-*
 %dir %{rustlibdir}/%{rust_x86_triple}/lib
 %{rustlibdir}/%{rust_x86_triple}/lib/*.so
+%{_sysconfdir}/target-spec-json-schema.json
 #%%exclude %%{_bindir}/*miri
 
 %files std-static-%{rust_x86_triple}
@@ -476,6 +476,7 @@ rm -fvr %{buildroot}%{_mandir}/man1
 %dir %{rustlibdir}/%{rust_x86_triple}
 %dir %{rustlibdir}/%{rust_x86_triple}/lib
 %{rustlibdir}/%{rust_x86_triple}/lib/*.rlib
+%{rustlibdir}/%{rust_x86_triple}/lib/*.rmeta
 
 %if 0%{?build_armv7}
 %files std-static-%{rust_arm_triple}
@@ -483,6 +484,7 @@ rm -fvr %{buildroot}%{_mandir}/man1
 %dir %{rustlibdir}/%{rust_arm_triple}
 %dir %{rustlibdir}/%{rust_arm_triple}/lib
 %{rustlibdir}/%{rust_arm_triple}/lib/*.rlib
+%{rustlibdir}/%{rust_arm_triple}/lib/*.rmeta
 %endif
 
 %if 0%{?build_aarch64}
@@ -491,6 +493,7 @@ rm -fvr %{buildroot}%{_mandir}/man1
 %dir %{rustlibdir}/%{rust_aarch64_triple}
 %dir %{rustlibdir}/%{rust_aarch64_triple}/lib
 %{rustlibdir}/%{rust_aarch64_triple}/lib/*.rlib
+%{rustlibdir}/%{rust_aarch64_triple}/lib/*.rmeta
 %endif
 
 %files -n cargo

@@ -10,11 +10,11 @@ directory location whenever linking is determined to happen.
 
 If $TMPDIR is already set, that value is used as expected.
 ---
- compiler/rustc_codegen_ssa/src/back/link.rs | 22 ++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+ compiler/rustc_codegen_ssa/src/back/link.rs | 23 +++++++++++++++++++--
+ 1 file changed, 21 insertions(+), 2 deletions(-)
 
 diff --git a/compiler/rustc_codegen_ssa/src/back/link.rs b/compiler/rustc_codegen_ssa/src/back/link.rs
-index 8882ba359..8fabd9e62 100644
+index 388503c72..5e6a768e6 100644
 --- a/compiler/rustc_codegen_ssa/src/back/link.rs
 +++ b/compiler/rustc_codegen_ssa/src/back/link.rs
 @@ -5,7 +5,7 @@ use std::ffi::OsString;
@@ -26,10 +26,10 @@ index 8882ba359..8fabd9e62 100644
  use std::process::{Output, Stdio};
  use std::{env, fmt, fs, io, mem, str};
  
-@@ -101,11 +101,31 @@ pub fn link_binary(
-         });
- 
-         if outputs.outputs.should_link() {
+@@ -110,12 +110,31 @@ pub fn link_binary(
+                 outputs,
+                 codegen_results.crate_info.local_crate_name,
+             );
 +            let mut clear_tmp = false;
 +            if env::var_os("TMPDIR").is_none()
 +                && let Some(mut home_tmp) = env::var_os("HOME")
@@ -47,14 +47,15 @@ index 8882ba359..8fabd9e62 100644
 +            }
              let tmpdir = TempDirBuilder::new()
                  .prefix("rustc")
-                 .tempdir()
+                 .tempdir_in(output.parent().unwrap_or_else(|| Path::new(".")))
                  .unwrap_or_else(|error| sess.dcx().emit_fatal(errors::CreateTempDir { error }));
              let path = MaybeTempDir::new(tmpdir, sess.opts.cg.save_temps);
+-
 +            if clear_tmp {
 +                unsafe {
 +                    env::remove_var("TMP");
 +                }
 +            }
-             let output = out_filename(
-                 sess,
-                 crate_type,
+             let crate_name = format!("{}", codegen_results.crate_info.local_crate_name);
+             let out_filename = output.file_for_writing(
+                 outputs,
